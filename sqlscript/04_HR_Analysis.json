@@ -1,0 +1,17 @@
+{
+	"name": "04_HR_Analysis",
+	"properties": {
+		"content": {
+			"query": "\n\nselect * from dim_employee;\n\n\nselect * from fact_employee_metrics;\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "hranalytics_db",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

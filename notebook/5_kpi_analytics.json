@@ -1,0 +1,128 @@
+{
+	"name": "5_kpi_analytics",
+	"properties": {
+		"folder": {
+			"name": "HR-Analytics"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "izspark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "a96099c8-959c-411e-9914-5a92561e98e1"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/2b86a5a0-e6e8-40d7-b6ce-8c48e7b3f707/resourceGroups/ResGrpCont1/providers/Microsoft.Synapse/workspaces/izsynapseworkspace/bigDataPools/izspark",
+				"name": "izspark",
+				"type": "Spark",
+				"endpoint": "https://izsynapseworkspace.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/izspark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.5",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"## 5_kpi_analytics\n",
+					"\n",
+					"\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Attrition Rate\n",
+					"spark.sql(\"\"\"\n",
+					"\n",
+					"SELECT ROUND(COUNT(attrition_rate) * 100.0 / COUNT(*),2) AS attrition_rate FROM \n",
+					"(SELECT CASE WHEN attrition_flag = 1 THEN 1 END AS attrition_rate FROM hranalytics_db.fact_employee_metrics) A\n",
+					"\n",
+					"\"\"\").show();"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Resignation Drivers\n",
+					"spark.sql(\"\"\"\n",
+					"SELECT exit_reason, COUNT(*) AS cnt\n",
+					"FROM hranalytics_db.silver_exit\n",
+					"GROUP BY exit_reason\n",
+					"ORDER BY cnt DESC;\n",
+					"\"\"\").show()"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Engagement Score\n",
+					"spark.sql(\"\"\"\n",
+					"SELECT AVG(survey_score) AS avg_engagement\n",
+					"FROM hranalytics_db.fact_employee_metrics;\n",
+					"\"\"\").show()"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# eNPS Score\n",
+					"spark.sql(\"\"\"\n",
+					"SELECT \n",
+					"    ROUND((COUNT(CASE WHEN survey_score >= 9 THEN 1 END) -\n",
+					"     COUNT(CASE WHEN survey_score <= 6 THEN 1 END)) * 100.0 / COUNT(*),2) AS eNPS\n",
+					"FROM hranalytics_db.fact_employee_metrics;\n",
+					"\"\"\").show()"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Early Churn Detection\n",
+					"spark.sql(\"\"\"\n",
+					"SELECT emp_sk\n",
+					"FROM hranalytics_db.fact_employee_metrics\n",
+					"WHERE rating < 2 AND survey_score < 5;\n",
+					"\"\"\").show()"
+				],
+				"execution_count": 16
+			}
+		]
+	}
+}
